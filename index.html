@@ -58,16 +58,10 @@
   /* ============ TOP BAR ============ */
   .top-bar {
     flex: 0 0 auto;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: flex-end; align-items: center;
     padding: 3vh 4vw 0;
     z-index: 10;
     min-height: 10vh;
-  }
-  .cat-wrap { display: flex; align-items: center; gap: 10px; }
-
-  .cat-badge {
-    font-size: 12px; letter-spacing: 0.18em; font-weight: 500;
-    color: rgba(245,245,247,0.85);
   }
   .top-btns { display: flex; gap: 10px; align-items: center; }
   .btn {
@@ -373,11 +367,8 @@
 
 <div id="app">
 
-  <!-- TOP: 배지 + 볼륨 -->
+  <!-- TOP: 볼륨 + 전체화면 (우측 정렬) -->
   <div class="top-bar">
-    <div class="cat-wrap">
-      <span class="cat-badge" id="cat-badge">AFTERNOON · FLOW</span>
-    </div>
     <div class="top-btns">
       <div class="vol-wrap" title="Volume">
         <svg class="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -543,7 +534,6 @@ function renderQuote(q, withAnim) {
 function updateBadge() {
   const h = new Date().getHours();
   const cat = CATS.find(c => h >= c.s && h < c.e) || CATS[CATS.length - 1];
-  $('cat-badge').textContent = cat.label;
   if (currentSlot !== cat.slot) {
     document.body.className = cat.body;
     currentSlot = cat.slot;
