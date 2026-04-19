@@ -11,7 +11,7 @@ Timeless quotes · time-slot voice (Serena / Kate) · ambient music · PWA.
 
 ```
 99_deploy/
-├── index.html            # v23 본체 (single-file HTML, ~257KB)
+├── index.html            # v24 본체 (single-file HTML, ~260KB)
 ├── _headers              # Netlify 캐시·보안 정책
 ├── manifest.webmanifest  # PWA 매니페스트
 ├── og.png                # SNS 공유 썸네일 1200×630
@@ -35,6 +35,7 @@ Timeless quotes · time-slot voice (Serena / Kate) · ambient music · PWA.
 
 ## 버전 이력
 
+- **v24** (2026-04-18) · Tobis Originals 10개 추가 (ID 626-635, 6 time slots)
 - **v23** (2026-04-18) · OG + PWA + Plausible + CTA
 - **v22** (2026-04-18) · 2-Voice 자동 슬롯 매핑 (Serena / Kate)
 - **v21** (2026-04-18) · BETA 배지 · Pill consistency · 플레이 톤 0.65
