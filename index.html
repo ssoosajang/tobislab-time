@@ -542,6 +542,10 @@
   @media (max-width: 768px) {
     .quote-en { font-size: 22px; }
     .bottom-stack { gap: 12px; padding-bottom: 2vh; }
+    .top-bar { flex-wrap: wrap; gap: 8px; min-height: auto; padding: 2vh 4vw 0; }
+    .pomo-wrap { order: 2; flex: 1 1 auto; }
+    .top-btns { order: 1; }
+    .vol-slider { width: 80px; }
   }
 </style>
 </head>
@@ -709,7 +713,7 @@ let currentSlot = null;
 let volume = 78;
 let isPlaying = false;
 let pendingSpeakTimer = null;
-let favorites = JSON.parse(localStorage.getItem('flow_favorites') || '[]');
+let favorites = safeStorage('flow_favorites', []);
 
 const $ = (id) => document.getElementById(id);
 const pad = (n) => n.toString().padStart(2, '0');
@@ -722,7 +726,14 @@ function toast(msg, duration) {
 }
 
 // ============ POMODORO ============
-const POMO_SAVED = JSON.parse(localStorage.getItem('flow_pomo') || '{"focus":25,"break":5}');
+function safeStorage(key, fallback) {
+  try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : fallback; }
+  catch(_) { return fallback; }
+}
+function safeSaveStorage(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(_) {}
+}
+const POMO_SAVED = safeStorage('flow_pomo', { focus: 25, break: 5 });
 let pomoFocus = POMO_SAVED.focus;
 let pomoBreak = POMO_SAVED.break;
 let pomoMode = 'FOCUS';
@@ -780,7 +791,7 @@ function pomoReset() {
 function pomoSetPreset(focus, brk) {
   pomoFocus = focus;
   pomoBreak = brk;
-  localStorage.setItem('flow_pomo', JSON.stringify({ focus, break: brk }));
+  safeSaveStorage('flow_pomo', { focus, break: brk });
   pomoMode = 'FOCUS';
   pomoRunning = false;
   clearInterval(pomoTimer);
@@ -1183,6 +1194,7 @@ function setUserVolume(v) {
 }
 
 let lastHour = -1;
+let lastTargetVol = -1;
 
 function tick() {
   const now = new Date();
@@ -1205,7 +1217,8 @@ function tick() {
   $('progress-fill').style.width = pct + '%';
 
   const cyc = getCycleInfo();
-  if (isPlaying && ytReady) {
+  if (isPlaying && ytReady && cyc.targetVol !== lastTargetVol) {
+    lastTargetVol = cyc.targetVol;
     ytVolume(cyc.targetVol);
   }
   // NATURE 재생 중이면 시간대 체크
@@ -1273,7 +1286,7 @@ function init() {
       favorites.splice(idx, 1);
       toast('저장 취소', 1500);
     }
-    localStorage.setItem('flow_favorites', JSON.stringify(favorites));
+    safeSaveStorage('flow_favorites', favorites);
     updateFavBtn();
   });
 
@@ -1306,6 +1319,7 @@ function init() {
     const h = new Date().getHours();
     const cat = CATS.find(c => h >= c.s && h < c.e) || CATS[CATS.length - 1];
     const pool = QUOTES.filter(q => q.time_slot === cat.slot);
+    if (!pool.length) return;
     let next = pool[Math.floor(Math.random() * pool.length)];
     while (next === currentQuote && pool.length > 1) {
       next = pool[Math.floor(Math.random() * pool.length)];
@@ -1354,7 +1368,11 @@ function init() {
     if (e.code === 'ArrowDown') { e.preventDefault(); setUserVolume(volume - 5); }
   });
 
-  setInterval(tick, 1000);
+  const tickTimer = setInterval(tick, 1000);
+  window.addEventListener('beforeunload', () => {
+    clearInterval(tickTimer);
+    clearInterval(pomoTimer);
+  });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
