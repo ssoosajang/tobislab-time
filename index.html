@@ -498,7 +498,7 @@ let yt = null;
 let ytReady = false;
 let currentQuote = null;
 let currentSlot = null;
-let volume = 60;
+let volume = 78;
 let isPlaying = false;
 let pendingSpeakTimer = null;
 
@@ -521,7 +521,7 @@ function getCycleInfo() {
   let targetVol = volume;
   if (secOfCycle < 90) {
     phase = 'QUOTE';
-    targetVol = Math.max(5, Math.floor(volume * 0.15));
+    targetVol = Math.max(10, Math.floor(volume * 0.30));
   } else if (secOfCycle > (57 * 60)) {
     phase = 'FADING';
     const elapsed = secOfCycle - (57 * 60);
