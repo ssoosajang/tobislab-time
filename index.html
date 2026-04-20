@@ -381,6 +381,97 @@
   }
   .toast.show { opacity: 1; }
 
+  /* ============ QUOTE ACTIONS (즐겨찾기 + 공유) ============ */
+  .quote-actions {
+    display: flex; gap: 10px; align-items: center;
+    margin-top: 20px;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+  .stage:hover .quote-actions { opacity: 1; }
+  .action-btn {
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: rgba(245,245,247,0.6);
+    cursor: pointer;
+    transition: all 200ms;
+    display: flex; align-items: center; gap: 5px;
+    backdrop-filter: blur(8px);
+    font-family: inherit;
+    line-height: 1;
+  }
+  .action-btn:hover { background: rgba(255,255,255,0.12); color: #F5F5F7; }
+  .action-btn.fav-active { color: #ff6b8a; border-color: rgba(255,107,138,0.4); background: rgba(255,107,138,0.08); }
+
+  /* ============ SAVED MODAL ============ */
+  .saved-modal {
+    position: fixed; inset: 0;
+    background: rgba(10,10,15,0.88);
+    backdrop-filter: blur(20px);
+    z-index: 200;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 8vh 5vw;
+    overflow-y: auto;
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms;
+  }
+  .saved-modal.open { opacity: 1; pointer-events: auto; }
+  .saved-modal-header {
+    width: 100%; max-width: 640px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 40px;
+  }
+  .saved-modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 500;
+    letter-spacing: 0.06em;
+    color: rgba(245,245,247,0.9);
+  }
+  .saved-modal-close {
+    background: none; border: none; cursor: pointer;
+    color: rgba(245,245,247,0.5); font-size: 20px;
+    transition: color 200ms;
+    padding: 4px;
+  }
+  .saved-modal-close:hover { color: #F5F5F7; }
+  .saved-list {
+    width: 100%; max-width: 640px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .saved-card {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 24px 28px;
+    cursor: pointer;
+    transition: background 200ms;
+  }
+  .saved-card:hover { background: rgba(255,255,255,0.08); }
+  .saved-card-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 500;
+    color: #F5F5F7; line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .saved-card-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 13px; color: rgba(245,245,247,0.5);
+    line-height: 1.5; margin-bottom: 12px;
+  }
+  .saved-card-author {
+    font-size: 11px; color: rgba(245,245,247,0.35);
+    letter-spacing: 0.06em;
+  }
+  .saved-empty {
+    color: rgba(245,245,247,0.3);
+    font-size: 14px; text-align: center;
+    margin-top: 60px; letter-spacing: 0.04em;
+  }
+
   @media (max-width: 768px) {
     .quote-en { font-size: 22px; }
     .bottom-stack { gap: 12px; padding-bottom: 2vh; }
@@ -408,6 +499,7 @@
         </svg>
         <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="60" step="1" aria-label="Volume">
       </div>
+      <button class="btn" id="saved-btn" title="저장한 명언">SAVED</button>
       <button class="btn" id="fs-btn">⛶</button>
     </div>
   </div>
@@ -421,6 +513,11 @@
     <!-- 저자 (영문) -->
     <div class="quote-meta">
       <span class="quote-author" id="quote-author">—</span>
+    </div>
+    <!-- 즐겨찾기 + 공유 -->
+    <div class="quote-actions">
+      <button class="action-btn" id="fav-btn" title="즐겨찾기">♡ 저장</button>
+      <button class="action-btn" id="share-btn" title="공유">↗ 공유</button>
     </div>
   </div>
 
@@ -462,6 +559,15 @@
        data-ad-format="auto"
        data-full-width-responsive="true"></ins>
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<!-- 저장 명언 모달 -->
+<div class="saved-modal" id="saved-modal">
+  <div class="saved-modal-header">
+    <span class="saved-modal-title">SAVED</span>
+    <button class="saved-modal-close" id="saved-modal-close">✕</button>
+  </div>
+  <div class="saved-list" id="saved-list"></div>
 </div>
 
 <div id="yt-wrap">
@@ -516,6 +622,7 @@ let currentSlot = null;
 let volume = 78;
 let isPlaying = false;
 let pendingSpeakTimer = null;
+let favorites = JSON.parse(localStorage.getItem('flow_favorites') || '[]');
 
 const $ = (id) => document.getElementById(id);
 const pad = (n) => n.toString().padStart(2, '0');
@@ -525,6 +632,39 @@ function toast(msg, duration) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), duration || 2500);
+}
+
+function updateFavBtn() {
+  if (!currentQuote) return;
+  const isSaved = favorites.some(f => f.quote_en === currentQuote.quote_en);
+  const btn = $('fav-btn');
+  btn.textContent = isSaved ? '♥ 저장됨' : '♡ 저장';
+  if (isSaved) btn.classList.add('fav-active');
+  else btn.classList.remove('fav-active');
+}
+
+function openSavedModal() {
+  const list = $('saved-list');
+  list.innerHTML = '';
+  if (favorites.length === 0) {
+    list.innerHTML = '<p class="saved-empty">저장한 명언이 없어요.<br>마음에 드는 명언에서 ♡를 눌러보세요.</p>';
+  } else {
+    favorites.slice().reverse().forEach(q => {
+      const card = document.createElement('div');
+      card.className = 'saved-card';
+      card.innerHTML = `
+        <div class="saved-card-en">"${q.quote_en}"</div>
+        <div class="saved-card-ko">"${q.quote_ko}"</div>
+        <div class="saved-card-author">— ${q.author}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+  $('saved-modal').classList.add('open');
+}
+
+function closeSavedModal() {
+  $('saved-modal').classList.remove('open');
 }
 
 function getCycleInfo() {
@@ -569,15 +709,15 @@ function renderQuote(q, withAnim) {
 
   if (withAnim) {
     const stage = $('stage');
-    // 1단계: 텍스트만 페이드 아웃 (scale 없음)
     stage.classList.add('fade');
     setTimeout(() => {
       updateText();
-      // 2단계: 새 텍스트 페이드 인
       stage.classList.remove('fade');
+      updateFavBtn();
     }, 400);
   } else {
     updateText();
+    updateFavBtn();
   }
 }
 
@@ -932,6 +1072,48 @@ function init() {
 
   $('gate-btn').addEventListener('click', enterFlow);
   $('play-btn').addEventListener('click', () => isPlaying ? ytPause() : ytPlay());
+
+  // 즐겨찾기 토글
+  $('fav-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!currentQuote) return;
+    const key = currentQuote.quote_en;
+    const idx = favorites.findIndex(f => f.quote_en === key);
+    if (idx === -1) {
+      favorites.push(currentQuote);
+      toast('저장했어요 ♥', 2000);
+    } else {
+      favorites.splice(idx, 1);
+      toast('저장 취소', 1500);
+    }
+    localStorage.setItem('flow_favorites', JSON.stringify(favorites));
+    updateFavBtn();
+  });
+
+  // 공유
+  $('share-btn').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    if (!currentQuote) return;
+    const text = `"${currentQuote.quote_en}"\n— ${currentQuote.author}\n\nhttps://time.tobislab.com`;
+    if (navigator.share) {
+      try { await navigator.share({ text }); } catch(_) {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast('클립보드에 복사됐어요', 2000);
+      } catch(_) {
+        toast('공유 실패', 1500);
+      }
+    }
+  });
+
+  // SAVED 모달
+  $('saved-btn').addEventListener('click', () => openSavedModal());
+  $('saved-modal-close').addEventListener('click', () => closeSavedModal());
+  $('saved-modal').addEventListener('click', (e) => {
+    if (e.target === $('saved-modal')) closeSavedModal();
+  });
+
   // 명언 영역: 클릭 = 새 명언 + 자동 발음
   $('stage').addEventListener('click', (e) => {
     const h = new Date().getHours();
