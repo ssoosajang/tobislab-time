@@ -445,19 +445,26 @@ const CATS = [
 const SOURCES = {
   'lofi-girl':  { id: 'jfKfPfyJRdk', label: 'Lofi Girl' },
   'synthwave':  { id: '4xDzrJKXOOY', label: 'Synthwave' },
-  // NATURE: 시간대 자동 전환 (낮=숲, 밤=비)
-  'nature': {
-    forest: 'TJZZeqmRLdc',  // 24/7 Forest Atmosphere (새소리·숲)
-    rain:   'nMqFLtsj34g'   // 24/7 Deep Rain Sounds (빗소리)
-  }
+  'nature': null  // fallback 배열로 관리
 };
 let currentSource = 'lofi-girl';
 
-// NATURE 선택 시 현재 시간에 맞는 ID 반환
-function getNatureId() {
+// NATURE fallback 목록 (임베딩 차단 시 순서대로 시도)
+const NATURE_IDS = {
+  forest: ['TJZZeqmRLdc', 'xNN7iTA57jM', 'BInVwDhy4sI'],  // 낮: 숲·새소리
+  rain:   ['nMqFLtsj34g', 'K3lPL0gO5Qg', '32NUpr3nja0']   // 밤: 빗소리
+};
+let natureFallbackIdx = 0;
+
+function getNatureKey() {
   const h = new Date().getHours();
-  // 낮 (06~18): Forest, 밤 (18~06): Rain
-  return (h >= 6 && h < 18) ? SOURCES.nature.forest : SOURCES.nature.rain;
+  return (h >= 6 && h < 18) ? 'forest' : 'rain';
+}
+
+function getNatureId(offset = 0) {
+  const key = getNatureKey();
+  const list = NATURE_IDS[key];
+  return list[(natureFallbackIdx + offset) % list.length];
 }
 
 let yt = null;
@@ -718,6 +725,16 @@ function onYouTubeIframeAPIReady() {
         }
       },
       onError: (e) => {
+        // nature 소스 임베딩 차단(101/150) 시 다음 fallback 시도
+        if (currentSource === 'nature') {
+          const list = NATURE_IDS[getNatureKey()];
+          if (natureFallbackIdx + 1 < list.length) {
+            natureFallbackIdx++;
+            try { yt.loadVideoById(getNatureId()); } catch(_) {}
+            return;
+          }
+          natureFallbackIdx = 0; // 모두 실패 시 초기화
+        }
         toast('⚠ 음악 로딩 오류', 3000);
       }
     }
@@ -739,8 +756,9 @@ function ytVolume(v) {
 }
 
 function switchSource(key) {
-  if (!ytReady || !SOURCES[key]) return;
+  if (!ytReady || !(key in SOURCES)) return;
   currentSource = key;
+  if (key === 'nature') natureFallbackIdx = 0;
   document.querySelectorAll('.src-dot').forEach(b => {
     b.classList.toggle('active', b.dataset.src === key);
   });
@@ -761,6 +779,7 @@ function checkNatureTransition() {
   const wasForest = (lastNatureHour >= 6 && lastNatureHour < 18);
   // 낮→밤 또는 밤→낮 전환 시에만 재로드
   if (lastNatureHour !== -1 && shouldBeForest !== wasForest) {
+    natureFallbackIdx = 0;
     try { yt.loadVideoById(getNatureId()); } catch(e) {}
   }
   lastNatureHour = h;
