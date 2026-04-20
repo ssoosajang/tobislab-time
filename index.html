@@ -234,28 +234,30 @@
   }
   .play-btn.primary:hover { background: rgba(245,245,247,0.85); }
 
-  /* 3. 음원 선택 버튼 */
+  /* 3. 음원 선택 — Jobs style: 텍스트 레이블 */
   .source-switcher {
-    display: flex; gap: 14px;
+    display: flex;
     align-items: center; justify-content: center;
     margin-bottom: 40px;
   }
-  .src-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.3);
+  .src-label {
+    background: none;
     border: none;
     cursor: pointer;
-    padding: 0;
-    transition: all 300ms ease;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: rgba(245,245,247,0.35);
+    padding: 14px 36px;
+    font-family: inherit;
+    text-transform: uppercase;
+    transition: color 400ms ease, opacity 400ms ease;
+    user-select: none;
+    position: relative;
   }
-  .src-dot:hover {
-    background: rgba(255,255,255,0.6);
-    transform: scale(1.15);
-  }
-  .src-dot.active {
-    background: rgba(255,255,255,0.9);
-    box-shadow: 0 0 10px rgba(255,255,255,0.25);
+  .src-label:hover { color: rgba(245,245,247,0.75); }
+  .src-label.changing {
+    opacity: 0;
+    transition: opacity 150ms ease;
   }
 
   /* 3. 푸터 */
@@ -425,11 +427,9 @@
       <button class="play-btn primary" id="play-btn">▶</button>
     </div>
 
-    <!-- 3. 음원 선택 (3개의 점) -->
+    <!-- 3. 음원 선택 — 텍스트 레이블 (클릭으로 순환) -->
     <div class="source-switcher">
-      <button class="src-dot active" data-src="lofi-girl" aria-label="Lofi Girl"></button>
-      <button class="src-dot" data-src="synthwave" aria-label="Synthwave"></button>
-      <button class="src-dot" data-src="nature" aria-label="Nature"></button>
+      <button class="src-label" id="src-label" aria-label="음원 변경">LOFI GIRL</button>
     </div>
 
     <!-- 4. 푸터 -->
@@ -783,13 +783,33 @@ function ytVolume(v) {
   try { yt.setVolume(Math.max(0, Math.min(100, v))); } catch(e) {}
 }
 
+const SOURCE_ORDER = ['lofi-girl', 'synthwave', 'nature'];
+const SOURCE_LABELS = { 'lofi-girl': 'LOFI GIRL', 'synthwave': 'SYNTHWAVE' };
+
+function getSrcLabel(key) {
+  if (key === 'nature') return getNatureKey() === 'forest' ? 'FOREST' : 'RAIN';
+  return SOURCE_LABELS[key] || key.toUpperCase();
+}
+
+function updateSrcLabel(animate) {
+  const el = $('src-label');
+  if (!el) return;
+  if (animate) {
+    el.classList.add('changing');
+    setTimeout(() => {
+      el.textContent = getSrcLabel(currentSource);
+      el.classList.remove('changing');
+    }, 150);
+  } else {
+    el.textContent = getSrcLabel(currentSource);
+  }
+}
+
 function switchSource(key) {
   if (!ytReady || !(key in SOURCES)) return;
   currentSource = key;
   if (key === 'nature') natureFallbackIdx = 0;
-  document.querySelectorAll('.src-dot').forEach(b => {
-    b.classList.toggle('active', b.dataset.src === key);
-  });
+  updateSrcLabel(true);
   try {
     const videoId = (key === 'nature') ? getNatureId() : SOURCES[key].id;
     yt.loadVideoById(videoId);
@@ -913,8 +933,10 @@ function init() {
     else document.exitFullscreen();
   });
 
-  document.querySelectorAll('.src-dot').forEach(b => {
-    b.addEventListener('click', () => switchSource(b.dataset.src));
+  updateSrcLabel(false);
+  $('src-label').addEventListener('click', () => {
+    const idx = SOURCE_ORDER.indexOf(currentSource);
+    switchSource(SOURCE_ORDER[(idx + 1) % SOURCE_ORDER.length]);
   });
 
   document.addEventListener('keydown', (e) => {
