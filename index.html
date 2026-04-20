@@ -61,12 +61,79 @@
   /* ============ TOP BAR ============ */
   .top-bar {
     flex: 0 0 auto;
-    display: flex; justify-content: flex-end; align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     padding: 3vh 4vw 0;
     z-index: 10;
     min-height: 10vh;
   }
   .top-btns { display: flex; gap: 10px; align-items: center; }
+
+  /* ============ POMODORO ============ */
+  .pomo-wrap {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    padding: 6px 16px;
+    backdrop-filter: blur(8px);
+    transition: all 200ms;
+  }
+  .pomo-wrap:hover { background: rgba(255,255,255,0.1); }
+  .pomo-mode {
+    font-size: 9px; letter-spacing: 0.18em;
+    color: rgba(245,245,247,0.4);
+    text-transform: uppercase;
+    min-width: 40px;
+  }
+  .pomo-mode.break { color: rgba(130,210,160,0.7); }
+  .pomo-time {
+    font-size: 15px; font-weight: 500;
+    color: rgba(245,245,247,0.85);
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    min-width: 42px; text-align: center;
+  }
+  .pomo-time.running { color: #F5F5F7; }
+  .pomo-controls { display: flex; gap: 6px; }
+  .pomo-btn {
+    background: none; border: none; cursor: pointer;
+    color: rgba(245,245,247,0.55); font-size: 11px;
+    padding: 2px 4px; transition: color 200ms;
+    font-family: inherit;
+  }
+  .pomo-btn:hover { color: #F5F5F7; }
+
+  .pomo-preset-popup {
+    position: absolute; top: calc(100% + 10px); left: 0;
+    background: rgba(18,18,24,0.96);
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    backdrop-filter: blur(20px);
+    z-index: 300;
+    opacity: 0; pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 200ms, transform 200ms;
+    white-space: nowrap;
+  }
+  .pomo-preset-popup.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .pomo-preset-label {
+    font-size: 9px; letter-spacing: 0.18em;
+    color: rgba(245,245,247,0.3); margin-bottom: 2px;
+  }
+  .pomo-preset-chips { display: flex; gap: 6px; }
+  .pomo-chip {
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 100px;
+    padding: 5px 12px; font-size: 11px;
+    color: rgba(245,245,247,0.65);
+    cursor: pointer; font-family: inherit;
+    transition: all 150ms; white-space: nowrap;
+  }
+  .pomo-chip:hover { background: rgba(255,255,255,0.14); color: #F5F5F7; }
+  .pomo-chip.active { background: rgba(245,245,247,0.15); color: #F5F5F7; border-color: rgba(255,255,255,0.35); }
   .btn {
     background: rgba(255,255,255,0.06);
     border: 0.5px solid rgba(255,255,255,0.12);
@@ -490,6 +557,26 @@
 
   <!-- TOP: 볼륨 + 전체화면 (우측 정렬) -->
   <div class="top-bar">
+    <!-- 왼쪽: 포모도로 타이머 -->
+    <div class="pomo-wrap" style="position:relative;">
+      <span class="pomo-mode" id="pomo-mode" style="cursor:pointer;" title="설정">FOCUS</span>
+      <span class="pomo-time" id="pomo-time">25:00</span>
+      <div class="pomo-controls">
+        <button class="pomo-btn" id="pomo-toggle" title="시작/정지">▶</button>
+        <button class="pomo-btn" id="pomo-reset" title="리셋">↺</button>
+      </div>
+      <!-- 프리셋 팝업 -->
+      <div class="pomo-preset-popup" id="pomo-popup">
+        <div class="pomo-preset-label">FOCUS / BREAK</div>
+        <div class="pomo-preset-chips" id="pomo-chips">
+          <button class="pomo-chip" data-focus="15" data-break="5">15/5</button>
+          <button class="pomo-chip active" data-focus="25" data-break="5">25/5</button>
+          <button class="pomo-chip" data-focus="45" data-break="10">45/10</button>
+          <button class="pomo-chip" data-focus="50" data-break="10">50/10</button>
+        </div>
+      </div>
+    </div>
+    <!-- 오른쪽: 기존 버튼 -->
     <div class="top-btns">
       <div class="vol-wrap" title="Volume">
         <svg class="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -632,6 +719,87 @@ function toast(msg, duration) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), duration || 2500);
+}
+
+// ============ POMODORO ============
+const POMO_SAVED = JSON.parse(localStorage.getItem('flow_pomo') || '{"focus":25,"break":5}');
+let pomoFocus = POMO_SAVED.focus;
+let pomoBreak = POMO_SAVED.break;
+let pomoMode = 'FOCUS';
+let pomoLeft = pomoFocus * 60;
+let pomoRunning = false;
+let pomoTimer = null;
+let pomoPopupOpen = false;
+
+function pomoDisplay() {
+  const m = Math.floor(pomoLeft / 60);
+  const s = pomoLeft % 60;
+  $('pomo-time').textContent = `${pad(m)}:${pad(s)}`;
+  $('pomo-time').classList.toggle('running', pomoRunning);
+  $('pomo-mode').textContent = pomoMode;
+  $('pomo-mode').classList.toggle('break', pomoMode === 'BREAK');
+  $('pomo-toggle').textContent = pomoRunning ? '❚❚' : '▶';
+}
+
+function pomoTick() {
+  if (!pomoRunning) return;
+  pomoLeft--;
+  if (pomoLeft <= 0) {
+    pomoRunning = false;
+    clearInterval(pomoTimer);
+    if (pomoMode === 'FOCUS') {
+      toast(`집중 완료! ${pomoBreak}분 휴식 시작 ☕`, 4000);
+      pomoMode = 'BREAK';
+      pomoLeft = pomoBreak * 60;
+    } else {
+      toast(`휴식 완료! 다시 집중 모드 🎯`, 4000);
+      pomoMode = 'FOCUS';
+      pomoLeft = pomoFocus * 60;
+    }
+  }
+  pomoDisplay();
+}
+
+function pomoToggle() {
+  pomoRunning = !pomoRunning;
+  if (pomoRunning) {
+    pomoTimer = setInterval(pomoTick, 1000);
+  } else {
+    clearInterval(pomoTimer);
+  }
+  pomoDisplay();
+}
+
+function pomoReset() {
+  pomoRunning = false;
+  clearInterval(pomoTimer);
+  pomoLeft = (pomoMode === 'FOCUS' ? pomoFocus : pomoBreak) * 60;
+  pomoDisplay();
+}
+
+function pomoSetPreset(focus, brk) {
+  pomoFocus = focus;
+  pomoBreak = brk;
+  localStorage.setItem('flow_pomo', JSON.stringify({ focus, break: brk }));
+  pomoMode = 'FOCUS';
+  pomoRunning = false;
+  clearInterval(pomoTimer);
+  pomoLeft = pomoFocus * 60;
+  document.querySelectorAll('.pomo-chip').forEach(c => {
+    c.classList.toggle('active', +c.dataset.focus === focus && +c.dataset.break === brk);
+  });
+  pomoDisplay();
+  closePomoPopup();
+}
+
+function openPomoPopup() {
+  pomoPopupOpen = true;
+  $('pomo-popup').classList.add('open');
+}
+
+function closePomoPopup() {
+  pomoPopupOpen = false;
+  $('pomo-popup').classList.remove('open');
 }
 
 function updateFavBtn() {
@@ -1069,6 +1237,25 @@ function init() {
   const q = pickQuoteForHour();
   renderQuote(q, false);
   // volume label removed (Jobs edition)
+
+  // 저장된 프리셋 칩 active 상태 반영
+  document.querySelectorAll('.pomo-chip').forEach(c => {
+    c.classList.toggle('active', +c.dataset.focus === pomoFocus && +c.dataset.break === pomoBreak);
+  });
+  pomoDisplay();
+  $('pomo-toggle').addEventListener('click', pomoToggle);
+  $('pomo-reset').addEventListener('click', pomoReset);
+  $('pomo-mode').addEventListener('click', (e) => {
+    e.stopPropagation();
+    pomoPopupOpen ? closePomoPopup() : openPomoPopup();
+  });
+  $('pomo-chips').addEventListener('click', (e) => {
+    const chip = e.target.closest('.pomo-chip');
+    if (chip) pomoSetPreset(+chip.dataset.focus, +chip.dataset.break);
+  });
+  document.addEventListener('click', (e) => {
+    if (pomoPopupOpen && !e.target.closest('.pomo-wrap')) closePomoPopup();
+  });
 
   $('gate-btn').addEventListener('click', enterFlow);
   $('play-btn').addEventListener('click', () => isPlaying ? ytPause() : ytPlay());
