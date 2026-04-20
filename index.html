@@ -500,6 +500,7 @@ let currentQuote = null;
 let currentSlot = null;
 let volume = 60;
 let isPlaying = false;
+let pendingSpeakTimer = null;
 
 const $ = (id) => document.getElementById(id);
 const pad = (n) => n.toString().padStart(2, '0');
@@ -699,7 +700,7 @@ if ('speechSynthesis' in window) {
 
 function speak(rate, pitch) {
   if (!('speechSynthesis' in window) || !currentQuote) return;
-  // 이전 발음 중단
+  if (pendingSpeakTimer) { clearTimeout(pendingSpeakTimer); pendingSpeakTimer = null; }
   window.speechSynthesis.cancel();
 
   // 자연스러운 발음을 위해 문장에 쉼표·마침표 유지
@@ -725,8 +726,8 @@ function speak(rate, pitch) {
 function speakTwice() {
   const p = VOICE_PRESET[currentSlot] || VOICE_PRESET.NIGHT;
   window.speechSynthesis.cancel();
-  speak(p.r1, p.pitch);              // 1차: 슬롯별 깊은 톤
-  setTimeout(() => speak(p.r2, p.pitch), p.gap);  // 2차: 슬롯별 여백
+  speak(p.r1, p.pitch);
+  pendingSpeakTimer = setTimeout(() => { pendingSpeakTimer = null; speak(p.r2, p.pitch); }, p.gap);
 }
 
 function onYouTubeIframeAPIReady() {
@@ -898,11 +899,11 @@ function init() {
       next = pool[Math.floor(Math.random() * pool.length)];
     }
     renderQuote(next, true);
-    // 명언 전환 후 슬롯별 자동 톤 + 5.5초 후 2회차 (속도 다르게)
-    setTimeout(() => {
+    if (pendingSpeakTimer) { clearTimeout(pendingSpeakTimer); pendingSpeakTimer = null; }
+    pendingSpeakTimer = setTimeout(() => {
+      pendingSpeakTimer = null;
       const p = VOICE_PRESET[currentSlot] || VOICE_PRESET.NIGHT;
       speak(p.r1, p.pitch);
-      setTimeout(() => speak(p.r2, p.pitch), p.gap);
     }, 600);
   });
   $('vol-slider').addEventListener('input', (e) => setUserVolume(parseInt(e.target.value, 10)));
