@@ -234,7 +234,7 @@
   }
   .play-btn.primary:hover { background: rgba(245,245,247,0.85); }
 
-  /* 3. 음원 선택 — Jobs style: 텍스트 레이블 */
+  /* 3. 음원 선택 — Jobs style: 현재 + 다음 흐림 */
   .source-switcher {
     display: flex;
     align-items: center; justify-content: center;
@@ -244,20 +244,32 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 9px;
-    letter-spacing: 0.22em;
-    color: rgba(245,245,247,0.35);
     padding: 14px 36px;
     font-family: inherit;
     text-transform: uppercase;
-    transition: color 400ms ease, opacity 400ms ease;
     user-select: none;
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
   }
-  .src-label:hover { color: rgba(245,245,247,0.75); }
-  .src-label.changing {
+  .src-current {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: rgba(245,245,247,0.65);
+    transition: opacity 200ms ease;
+  }
+  .src-next {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    color: rgba(245,245,247,0.18);
+    transition: opacity 200ms ease;
+  }
+  .src-label:hover .src-current { color: rgba(245,245,247,0.9); }
+  .src-label:hover .src-next    { color: rgba(245,245,247,0.35); }
+  .src-label.changing .src-current,
+  .src-label.changing .src-next {
     opacity: 0;
-    transition: opacity 150ms ease;
+    transition: opacity 130ms ease;
   }
 
   /* 3. 푸터 */
@@ -427,9 +439,12 @@
       <button class="play-btn primary" id="play-btn">▶</button>
     </div>
 
-    <!-- 3. 음원 선택 — 텍스트 레이블 (클릭으로 순환) -->
+    <!-- 3. 음원 선택 — 현재(밝음) + 다음(흐림) -->
     <div class="source-switcher">
-      <button class="src-label" id="src-label" aria-label="음원 변경">LOFI GIRL</button>
+      <button class="src-label" id="src-label" aria-label="음원 변경">
+        <span class="src-current" id="src-current">LOFI GIRL</span>
+        <span class="src-next" id="src-next">SYNTHWAVE</span>
+      </button>
     </div>
 
     <!-- 4. 푸터 -->
@@ -791,17 +806,25 @@ function getSrcLabel(key) {
   return SOURCE_LABELS[key] || key.toUpperCase();
 }
 
+function getNextSource() {
+  const idx = SOURCE_ORDER.indexOf(currentSource);
+  return SOURCE_ORDER[(idx + 1) % SOURCE_ORDER.length];
+}
+
 function updateSrcLabel(animate) {
   const el = $('src-label');
-  if (!el) return;
+  const cur = $('src-current');
+  const nxt = $('src-next');
+  if (!el || !cur || !nxt) return;
+  const apply = () => {
+    cur.textContent = getSrcLabel(currentSource);
+    nxt.textContent = getSrcLabel(getNextSource());
+  };
   if (animate) {
     el.classList.add('changing');
-    setTimeout(() => {
-      el.textContent = getSrcLabel(currentSource);
-      el.classList.remove('changing');
-    }, 150);
+    setTimeout(() => { apply(); el.classList.remove('changing'); }, 130);
   } else {
-    el.textContent = getSrcLabel(currentSource);
+    apply();
   }
 }
 
@@ -934,10 +957,7 @@ function init() {
   });
 
   updateSrcLabel(false);
-  $('src-label').addEventListener('click', () => {
-    const idx = SOURCE_ORDER.indexOf(currentSource);
-    switchSource(SOURCE_ORDER[(idx + 1) % SOURCE_ORDER.length]);
-  });
+  $('src-label').addEventListener('click', () => switchSource(getNextSource()));
 
   document.addEventListener('keydown', (e) => {
     if (!$('gate').classList.contains('hidden')) {
