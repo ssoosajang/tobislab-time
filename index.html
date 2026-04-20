@@ -28,6 +28,9 @@
 <!-- ② Analytics (Plausible · 쿠키 없음 · GDPR OK) -->
 <script defer data-domain="time.tobislab.com" src="https://plausible.io/js/script.js"></script>
 
+<!-- ③ AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1484401909609053" crossorigin="anonymous"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Serif+KR:wght@300;400&display=swap" rel="stylesheet">
@@ -262,6 +265,19 @@
     letter-spacing: 0.2em;
   }
 
+  /* 4. AdSense 하단 배너 */
+  #ad-bottom {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 0 8px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(8px);
+  }
+
   /* ============ GATE ============ */
   .gate {
     position: fixed; inset: 0;
@@ -418,6 +434,17 @@
 
     <!-- 4. 푸터 -->
     <div class="footer">TOBISLAB · FLOW</div>
+
+    <!-- 5. AdSense 하단 배너 -->
+    <div id="ad-bottom">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1484401909609053"
+           data-ad-slot="SLOT_ID_HERE"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
   </div>
 </div>
