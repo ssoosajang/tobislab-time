@@ -1,0 +1,24 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run validate.mjs (인라인 script 문법 + QUOTES + manifest + CSP)
+        run: node scripts/validate.mjs
+
+      - name: HTML 구조 검증 (htmlhint)
+        run: npx --yes htmlhint@latest index.html

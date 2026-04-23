@@ -10,6 +10,7 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://plausible.io https://pagead2.googlesyndication.com https://*.googlesyndication.com https://www.googletagservices.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.ytimg.com https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.google.co.kr; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.doubleclick.net; connect-src 'self' https://plausible.io https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.doubleclick.net; media-src 'self' blob:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; form-action 'self'
 
 # Root HTML — 5min cache, fast refresh
 /index.html
@@ -19,6 +20,11 @@
 /manifest.webmanifest
   Cache-Control: public, max-age=3600
   Content-Type: application/manifest+json
+
+# Service Worker — no-cache (업데이트 즉시 반영되어야 함)
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
 
 # Icons · OG image — long cache (immutable filenames recommended)
 /og.png
