@@ -4,19 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FLOW — by Tobis Lab</title>
-<meta name="description" content="A minimalist focus companion. Timeless quotes · time-slot voice · ambient music. By Tobis Lab.">
+<meta name="description" content="FLOW is a Tobis Lab focus timer experiment for learning, work, sound, and spatial rhythm.">
 
 <!-- ① Open Graph / Twitter -->
 <meta property="og:type"        content="website">
 <meta property="og:site_name"   content="Tobis Lab">
 <meta property="og:title"       content="FLOW — by Tobis Lab">
-<meta property="og:description" content="A minimalist focus companion. Timeless quotes · ambient music.">
+<meta property="og:description" content="A focus timer experiment for learning, work, and spatial rhythm by Tobis Lab.">
 <meta property="og:url"         content="https://time.tobislab.com">
 <meta property="og:image"       content="https://time.tobislab.com/og.png">
 <meta property="og:locale"      content="ko_KR">
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:title"       content="FLOW — by Tobis Lab">
-<meta name="twitter:description" content="A minimalist focus companion.">
+<meta name="twitter:description" content="A focus timer experiment for learning, work, and spatial rhythm.">
 <meta name="twitter:image"       content="https://time.tobislab.com/og.png">
 
 <!-- ⑤ PWA · Home screen -->
@@ -65,6 +65,7 @@
     padding: 3vh 4vw 0;
     z-index: 10;
     min-height: 10vh;
+    gap: 14px;
   }
   .top-btns { display: flex; gap: 10px; align-items: center; }
 
@@ -250,7 +251,7 @@
     flex: 0 0 auto;
     display: flex; flex-direction: column;
     align-items: center;
-    padding: 0 3vw 5vh;
+    padding: 0 3vw max(5vh, 58px);
     min-height: 30vh;
     justify-content: flex-end;
   }
@@ -390,7 +391,7 @@
     backdrop-filter: blur(20px);
     transition: opacity 600ms;
     overflow-y: auto;
-    padding: 48px 16px 32px;
+    padding: 48px 16px max(32px, env(safe-area-inset-bottom));
   }
   .gate.hidden { opacity: 0; pointer-events: none; }
   .gate-inner {
@@ -399,6 +400,7 @@
     flex: 1;
     width: 100%;
     max-width: 540px;
+    min-height: 0;
   }
   .gate-title {
     font-family: 'Cormorant Garamond', serif;
@@ -439,6 +441,7 @@
     border-radius: 100px;
     cursor: pointer;
     transition: all 400ms ease;
+    min-height: 50px;
   }
   .gate-btn:hover {
     background: #F5F5F7;
@@ -446,49 +449,8 @@
     border-color: #F5F5F7;
   }
 
-  /* Gate CTA buttons — Tobis Lab 연결 */
-  .gate-cta {
-    display: flex;
-    gap: 10px;
-    margin-top: 32px;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 0 8px;
-  }
-  .cta-btn {
-    display: inline-block;
-    background: rgba(255,255,255,0.05);
-    color: rgba(245,245,247,0.85);
-    border: 0.5px solid rgba(255,255,255,0.18);
-    padding: 11px 20px;
-    font-size: 10.5px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    border-radius: 100px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 240ms ease;
-    backdrop-filter: blur(8px);
-    white-space: nowrap;
-  }
-  .cta-btn:hover {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.4);
-    color: #F5F5F7;
-    transform: translateY(-1px);
-  }
-  .cta-btn.cta-primary {
-    background: rgba(0,170,210,0.14);
-    border-color: rgba(0,170,210,0.45);
-    color: #F5F5F7;
-  }
-  .cta-btn.cta-primary:hover {
-    background: rgba(0,170,210,0.26);
-    border-color: rgba(0,170,210,0.7);
-  }
-
   .gate-meta {
-    margin-top: 40px;
+    margin-top: clamp(30px, 5vh, 52px);
     text-align: center;
     max-width: 580px;
     padding: 0 16px;
@@ -501,26 +463,15 @@
   .gate-meta a {
     color: inherit;
     text-decoration: none;
-    transition: opacity 200ms ease, color 200ms ease;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 0.5px;
+    transition: opacity 200ms ease, color 200ms ease, text-decoration-color 200ms ease;
   }
-  .gate-meta a:hover { opacity: 1; color: rgba(245,245,247,0.75); }
-  .gate-series {
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
-    color: rgba(245,245,247,0.42);
-    margin: 0 auto 4px;
-    max-width: 520px;
-    line-height: 1.55;
-  }
-  .gate-series-ko {
-    font-family: 'Noto Serif KR', serif;
-    font-size: 10px;
-    font-weight: 300;
-    color: rgba(245,245,247,0.28);
-    margin: 0 auto 14px;
-    max-width: 520px;
-    line-height: 1.6;
-    letter-spacing: 0.01em;
+  .gate-meta a:hover {
+    opacity: 1;
+    color: rgba(245,245,247,0.58);
+    text-decoration: underline;
+    text-decoration-color: rgba(245,245,247,0.32);
   }
 
   .beta-tag {
@@ -676,29 +627,26 @@
 
   @media (max-width: 768px) {
     .quote-en { font-size: 22px; }
-    .bottom-stack { gap: 12px; padding-bottom: 2vh; }
-    .top-bar { flex-wrap: wrap; gap: 8px; min-height: auto; padding: 2vh 4vw 0; }
-    .pomo-wrap { order: 2; flex: 1 1 auto; }
+    .bottom-stack { gap: 12px; padding: 0 4vw max(72px, env(safe-area-inset-bottom)); }
+    .top-bar { flex-wrap: wrap; gap: 12px; min-height: auto; padding: 2.5vh 4vw 0; }
+    .pomo-wrap {
+      order: 2;
+      flex: 1 1 100%;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 16px;
+    }
     .top-btns { order: 1; }
     .vol-slider { width: 80px; }
 
-    /* Gate 모바일 — 간격 + CTA 세로 정렬 */
-    .gate { padding: 32px 16px 24px; }
-    .gate-title { margin-bottom: 16px; font-size: clamp(38px, 11vw, 56px); }
+    /* Gate 모바일 — 중심 구조 유지 + 은은한 하단 설명 */
+    .gate { padding: 34px 16px max(28px, env(safe-area-inset-bottom)); }
+    .gate-inner { justify-content: center; padding-top: 6px; }
+    .gate-title { margin-bottom: 18px; font-size: clamp(38px, 11vw, 56px); }
     .gate-tagline { font-size: 13px; max-width: 360px; }
-    .gate-tagline-ko { font-size: 10.5px; max-width: 360px; margin-bottom: 32px; }
-    .gate-btn { padding: 14px 44px; font-size: 11px; }
-    .gate-cta {
-      flex-direction: column;
-      width: 100%;
-      max-width: 280px;
-      gap: 10px;
-      margin-top: 28px;
-    }
-    .cta-btn { padding: 13px 18px; font-size: 10.5px; text-align: center; }
-    .gate-meta { margin-top: 32px; }
-    .gate-series { font-size: 10px; }
-    .gate-series-ko { font-size: 9.5px; }
+    .gate-tagline-ko { font-size: 10.5px; max-width: 360px; margin-bottom: clamp(34px, 6vh, 46px); }
+    .gate-btn { padding: 14px 44px; font-size: 11px; min-width: 188px; }
+    .gate-meta { margin-top: clamp(30px, 5vh, 42px); }
 
     /* Footer 설명 모바일 — AdSense 배너와 겹침 방지 */
     .footer { padding: 0 12px; }
@@ -719,15 +667,9 @@
     <p class="gate-tagline">A focus timer experiment for learning, work, and spatial rhythm.</p>
     <p class="gate-tagline-ko">학습, 업무, 공간 리듬을 위한 포커스 타이머 실험입니다.</p>
     <button class="gate-btn" id="gate-btn">ENTER</button>
-    <div class="gate-cta">
-      <a class="cta-btn" href="https://tobislab.com/projects.html" target="_blank" rel="noopener">Explore Tobis Lab Projects</a>
-      <a class="cta-btn cta-primary" href="https://tobislab.com/" target="_blank" rel="noopener">Start a Space Strategy Project</a>
-    </div>
   </div>
   <div class="gate-meta">
-    <p class="gate-series">Designed by Tobis Lab as part of our Spatial × Education × AI experiment series.</p>
-    <p class="gate-series-ko">FLOW는 Tobis Lab의 Spatial × Education × AI 실험 시리즈 중 첫 번째 프로젝트입니다.</p>
-    <div class="gate-meta-link"><a href="https://tobislab.com" target="_blank" rel="noopener">TOBISLAB</a> · EXPERIMENT 01</div>
+    <div class="gate-meta-link"><a href="https://tobislab.com/" target="_blank" rel="noopener noreferrer">TOBISLAB · EXPERIMENT 01</a></div>
   </div>
 </div>
 
@@ -811,8 +753,7 @@
 
     <!-- 4. 푸터 -->
     <div class="footer">
-      <p class="footer-experiment">FLOW studies how time, sound, and spatial rhythm affect concentration.</p>
-      <p class="footer-experiment-ko">FLOW는 시간, 사운드, 공간 리듬이 집중에 미치는 영향을 실험합니다.</p>
+      <p class="footer-experiment">A focus timer experiment by Tobis Lab.</p>
       <div>TOBISLAB · FLOW</div>
     </div>
 
