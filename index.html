@@ -344,6 +344,27 @@
     font-size: 9px;
     color: rgba(245,245,247,0.25);
     letter-spacing: 0.2em;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  .footer-experiment {
+    font-size: 10px;
+    color: rgba(245,245,247,0.4);
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+    line-height: 1.5;
+  }
+  .footer-experiment-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 9.5px;
+    font-weight: 300;
+    color: rgba(245,245,247,0.26);
+    letter-spacing: 0.01em;
+    margin-bottom: 8px;
+    line-height: 1.55;
   }
 
   /* 4. AdSense 하단 배너 — fixed로 항상 노출 */
@@ -368,13 +389,44 @@
     z-index: 100;
     backdrop-filter: blur(20px);
     transition: opacity 600ms;
+    overflow-y: auto;
+    padding: 48px 16px 32px;
   }
   .gate.hidden { opacity: 0; pointer-events: none; }
+  .gate-inner {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex: 1;
+    width: 100%;
+    max-width: 540px;
+  }
   .gate-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(40px, 5vw, 72px);
-    font-weight: 500; margin-bottom: 48px;
+    font-weight: 500; margin-bottom: 20px;
     letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .gate-tagline {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: rgba(245,245,247,0.85);
+    text-align: center;
+    max-width: 460px;
+    margin: 0 16px 6px;
+    line-height: 1.45;
+  }
+  .gate-tagline-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(245,245,247,0.45);
+    text-align: center;
+    max-width: 460px;
+    margin: 0 16px 38px;
+    line-height: 1.55;
+    letter-spacing: 0.01em;
   }
 
   .gate-btn {
@@ -393,8 +445,55 @@
     color: #0A0A0F;
     border-color: #F5F5F7;
   }
+
+  /* Gate CTA buttons — Tobis Lab 연결 */
+  .gate-cta {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 8px;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: rgba(255,255,255,0.05);
+    color: rgba(245,245,247,0.85);
+    border: 0.5px solid rgba(255,255,255,0.18);
+    padding: 11px 20px;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 240ms ease;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+  .cta-btn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+    color: #F5F5F7;
+    transform: translateY(-1px);
+  }
+  .cta-btn.cta-primary {
+    background: rgba(0,170,210,0.14);
+    border-color: rgba(0,170,210,0.45);
+    color: #F5F5F7;
+  }
+  .cta-btn.cta-primary:hover {
+    background: rgba(0,170,210,0.26);
+    border-color: rgba(0,170,210,0.7);
+  }
+
   .gate-meta {
-    position: absolute; bottom: 4vh;
+    margin-top: 40px;
+    text-align: center;
+    max-width: 580px;
+    padding: 0 16px;
+  }
+  .gate-meta-link {
     font-size: 10px;
     letter-spacing: 0.2em;
     color: rgba(245,245,247,0.3);
@@ -405,6 +504,24 @@
     transition: opacity 200ms ease, color 200ms ease;
   }
   .gate-meta a:hover { opacity: 1; color: rgba(245,245,247,0.75); }
+  .gate-series {
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: rgba(245,245,247,0.42);
+    margin: 0 auto 4px;
+    max-width: 520px;
+    line-height: 1.55;
+  }
+  .gate-series-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 10px;
+    font-weight: 300;
+    color: rgba(245,245,247,0.28);
+    margin: 0 auto 14px;
+    max-width: 520px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
 
   .beta-tag {
     display: inline-block;
@@ -489,14 +606,32 @@
   .saved-modal.open { opacity: 1; pointer-events: auto; }
   .saved-modal-header {
     width: 100%; max-width: 640px;
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 40px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 32px;
+    gap: 16px;
   }
+  .saved-modal-titles { display: flex; flex-direction: column; gap: 4px; }
   .saved-modal-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 28px; font-weight: 500;
     letter-spacing: 0.06em;
     color: rgba(245,245,247,0.9);
+    line-height: 1.1;
+  }
+  .saved-modal-desc {
+    font-size: 12px;
+    color: rgba(245,245,247,0.55);
+    letter-spacing: 0.02em;
+    line-height: 1.45;
+    margin-top: 6px;
+  }
+  .saved-modal-desc-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 10.5px;
+    font-weight: 300;
+    color: rgba(245,245,247,0.32);
+    line-height: 1.55;
+    margin-top: 2px;
   }
   .saved-modal-close {
     background: none; border: none; cursor: pointer;
@@ -546,15 +681,54 @@
     .pomo-wrap { order: 2; flex: 1 1 auto; }
     .top-btns { order: 1; }
     .vol-slider { width: 80px; }
+
+    /* Gate 모바일 — 간격 + CTA 세로 정렬 */
+    .gate { padding: 32px 16px 24px; }
+    .gate-title { margin-bottom: 16px; font-size: clamp(38px, 11vw, 56px); }
+    .gate-tagline { font-size: 13px; max-width: 360px; }
+    .gate-tagline-ko { font-size: 10.5px; max-width: 360px; margin-bottom: 32px; }
+    .gate-btn { padding: 14px 44px; font-size: 11px; }
+    .gate-cta {
+      flex-direction: column;
+      width: 100%;
+      max-width: 280px;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .cta-btn { padding: 13px 18px; font-size: 10.5px; text-align: center; }
+    .gate-meta { margin-top: 32px; }
+    .gate-series { font-size: 10px; }
+    .gate-series-ko { font-size: 9.5px; }
+
+    /* Footer 설명 모바일 — AdSense 배너와 겹침 방지 */
+    .footer { padding: 0 12px; }
+    .footer-experiment { font-size: 9.5px; }
+    .footer-experiment-ko { font-size: 9px; }
+
+    /* SAVED 모달 모바일 */
+    .saved-modal-desc { font-size: 11px; }
+    .saved-modal-desc-ko { font-size: 10px; }
   }
 </style>
 </head>
 <body class="slot-afternoon">
 
 <div class="gate" id="gate">
-  <div class="gate-title">FLOW<span class="beta-tag">BETA</span></div>
-  <button class="gate-btn" id="gate-btn">ENTER</button>
-  <div class="gate-meta"><a href="https://tobislab.com" target="_blank" rel="noopener">TOBISLAB</a> · EXPERIMENT 01</div>
+  <div class="gate-inner">
+    <div class="gate-title">FLOW<span class="beta-tag">BETA</span></div>
+    <p class="gate-tagline">A focus timer experiment for learning, work, and spatial rhythm.</p>
+    <p class="gate-tagline-ko">학습, 업무, 공간 리듬을 위한 포커스 타이머 실험입니다.</p>
+    <button class="gate-btn" id="gate-btn">ENTER</button>
+    <div class="gate-cta">
+      <a class="cta-btn" href="https://tobislab.com/projects.html" target="_blank" rel="noopener">Explore Tobis Lab Projects</a>
+      <a class="cta-btn cta-primary" href="https://tobislab.com/" target="_blank" rel="noopener">Start a Space Strategy Project</a>
+    </div>
+  </div>
+  <div class="gate-meta">
+    <p class="gate-series">Designed by Tobis Lab as part of our Spatial × Education × AI experiment series.</p>
+    <p class="gate-series-ko">FLOW는 Tobis Lab의 Spatial × Education × AI 실험 시리즈 중 첫 번째 프로젝트입니다.</p>
+    <div class="gate-meta-link"><a href="https://tobislab.com" target="_blank" rel="noopener">TOBISLAB</a> · EXPERIMENT 01</div>
+  </div>
 </div>
 
 <div id="app">
@@ -636,7 +810,11 @@
     </div>
 
     <!-- 4. 푸터 -->
-    <div class="footer">TOBISLAB · FLOW</div>
+    <div class="footer">
+      <p class="footer-experiment">FLOW studies how time, sound, and spatial rhythm affect concentration.</p>
+      <p class="footer-experiment-ko">FLOW는 시간, 사운드, 공간 리듬이 집중에 미치는 영향을 실험합니다.</p>
+      <div>TOBISLAB · FLOW</div>
+    </div>
 
   </div>
 </div>
@@ -671,7 +849,11 @@
 <!-- 저장 명언 모달 -->
 <div class="saved-modal" id="saved-modal">
   <div class="saved-modal-header">
-    <span class="saved-modal-title">SAVED</span>
+    <div class="saved-modal-titles">
+      <span class="saved-modal-title">SAVED</span>
+      <p class="saved-modal-desc">Save your favorite focus rhythm and ambient sound set.</p>
+      <p class="saved-modal-desc-ko">자주 사용하는 집중 시간과 사운드 조합을 저장하세요.</p>
+    </div>
     <button class="saved-modal-close" id="saved-modal-close">✕</button>
   </div>
   <div class="saved-list" id="saved-list"></div>
