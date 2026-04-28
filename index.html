@@ -367,6 +367,12 @@
     margin-bottom: 8px;
     line-height: 1.55;
   }
+  .footer-brand {
+    font-size: 8px;
+    color: rgba(245,245,247,0.16);
+    letter-spacing: 0.22em;
+    line-height: 1.5;
+  }
 
   /* 4. AdSense 하단 배너 — fixed로 항상 노출 */
   #ad-bottom {
@@ -620,9 +626,9 @@
     letter-spacing: 0.06em;
   }
   .saved-empty {
-    color: rgba(245,245,247,0.3);
-    font-size: 14px; text-align: center;
-    margin-top: 60px; letter-spacing: 0.04em;
+    color: rgba(245,245,247,0.28);
+    font-size: 12px; text-align: center;
+    margin-top: 56px; letter-spacing: 0.04em;
   }
 
   @media (max-width: 768px) {
@@ -706,7 +712,7 @@
         </svg>
         <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="60" step="1" aria-label="Volume">
       </div>
-      <button class="btn" id="saved-btn" title="저장한 명언">SAVED</button>
+      <button class="btn" id="saved-btn" title="저장된 집중 리듬">SAVED</button>
       <button class="btn" id="fs-btn">⛶</button>
     </div>
   </div>
@@ -754,7 +760,7 @@
     <!-- 4. 푸터 -->
     <div class="footer">
       <p class="footer-experiment">A focus timer experiment by Tobis Lab.</p>
-      <div>TOBISLAB · FLOW</div>
+      <div class="footer-brand">TOBISLAB · FLOW</div>
     </div>
 
   </div>
@@ -855,6 +861,7 @@ let volume = 78;
 let isPlaying = false;
 let pendingSpeakTimer = null;
 let favorites = safeStorage('flow_favorites', []);
+let toastTimer = null;
 
 const $ = (id) => document.getElementById(id);
 const pad = (n) => n.toString().padStart(2, '0');
@@ -863,7 +870,11 @@ function toast(msg, duration) {
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration || 2500);
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    toastTimer = null;
+  }, duration || 1600);
 }
 
 // ============ POMODORO ============
@@ -965,11 +976,16 @@ function updateFavBtn() {
 
 function openSavedModal() {
   const list = $('saved-list');
+  const savedFlows = favorites.filter(q => q && q.quote_en && q.quote_en !== '—' && q.author && q.author !== '—');
+  if (savedFlows.length !== favorites.length) {
+    favorites = savedFlows;
+    safeSaveStorage('flow_favorites', favorites);
+  }
   list.innerHTML = '';
-  if (favorites.length === 0) {
-    list.innerHTML = '<p class="saved-empty">저장한 명언이 없어요.<br>마음에 드는 명언에서 ♡를 눌러보세요.</p>';
+  if (savedFlows.length === 0) {
+    list.innerHTML = '<p class="saved-empty">No saved flows yet.</p>';
   } else {
-    favorites.slice().reverse().forEach(q => {
+    savedFlows.slice().reverse().forEach(q => {
       const card = document.createElement('div');
       card.className = 'saved-card';
       card.innerHTML = `
@@ -1439,10 +1455,10 @@ function init() {
     const idx = favorites.findIndex(f => f.quote_en === key);
     if (idx === -1) {
       favorites.push(currentQuote);
-      toast('저장했어요 ♥', 2000);
+      toast('Saved.', 1500);
     } else {
       favorites.splice(idx, 1);
-      toast('저장 취소', 1500);
+      toast('Removed.', 1500);
     }
     safeSaveStorage('flow_favorites', favorites);
     updateFavBtn();
@@ -1453,14 +1469,17 @@ function init() {
     e.stopPropagation();
     if (!currentQuote) return;
     const text = `"${currentQuote.quote_en}"\n— ${currentQuote.author}\n\nhttps://time.tobislab.com`;
-    if (navigator.share) {
-      try { await navigator.share({ text }); } catch(_) {}
-    } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        toast('클립보드에 복사됐어요', 2000);
-      } catch(_) {
-        toast('공유 실패', 1500);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Link copied.', 1500);
+    } catch(_) {
+      if (navigator.share) {
+        try {
+          await navigator.share({ text });
+          toast('Shared.', 1500);
+        } catch(_) {}
+      } else {
+        toast('Share failed.', 1500);
       }
     }
   });
