@@ -77,9 +77,10 @@
     border-radius: 100px;
     padding: 6px 16px;
     backdrop-filter: blur(8px);
-    transition: all 200ms;
+    transition: all 200ms, border-color 220ms ease;
   }
   .pomo-wrap:hover { background: rgba(255,255,255,0.1); }
+  .pomo-wrap.break-mode { border-color: rgba(130,210,160,0.18); }
   .pomo-mode {
     font-size: 9px; letter-spacing: 0.18em;
     color: rgba(245,245,247,0.4);
@@ -95,6 +96,31 @@
     min-width: 42px; text-align: center;
   }
   .pomo-time.running { color: #F5F5F7; }
+  .pomo-wrap.is-running .pomo-time { animation: pomoBreath 8s ease-in-out infinite; }
+  @keyframes pomoBreath {
+    0%, 100% { opacity: 0.92; }
+    50% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pomo-wrap.is-running .pomo-time { animation: none; }
+  }
+
+  /* ── Pomo progress underline ── */
+  .pomo-progress {
+    position: absolute; left: 16px; right: 16px; bottom: 4px;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px; overflow: hidden; pointer-events: none;
+  }
+  .pomo-progress-fill {
+    height: 100%; width: 100%;
+    background: rgba(245,245,247,0.3);
+    transition: width 600ms cubic-bezier(0.4,0,0.2,1), background 400ms ease;
+    transform-origin: left;
+  }
+  .pomo-wrap.is-running .pomo-progress-fill { background: rgba(245,245,247,0.55); }
+  .pomo-wrap.break-mode .pomo-progress-fill { background: rgba(130,210,160,0.5); }
+
   .pomo-controls { display: flex; gap: 6px; }
   .pomo-btn {
     background: none; border: none; cursor: pointer;
@@ -558,9 +584,10 @@
     padding: 8vh 5vw;
     overflow-y: auto;
     opacity: 0; pointer-events: none;
-    transition: opacity 300ms;
+    transform: translateY(6px) scale(0.985);
+    transition: opacity 360ms cubic-bezier(0.32,0.72,0,1), transform 360ms cubic-bezier(0.32,0.72,0,1);
   }
-  .saved-modal.open { opacity: 1; pointer-events: auto; }
+  .saved-modal.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
   .saved-modal-header {
     width: 100%; max-width: 640px;
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -682,6 +709,20 @@
     font-size: 12px; text-align: center;
     margin-top: 56px; letter-spacing: 0.04em;
   }
+  .saved-empty-divider {
+    width: 40px; height: 0.5px;
+    background: rgba(255,255,255,0.1);
+    margin: 16px auto 0;
+  }
+  .saved-empty-ko {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 11px;
+    color: rgba(245,245,247,0.32);
+    text-align: center;
+    margin-top: 12px;
+    letter-spacing: 0.01em;
+    line-height: 1.55;
+  }
 
   @media (max-width: 768px) {
     .quote-en { font-size: 22px; }
@@ -694,6 +735,8 @@
       min-height: 44px;
       padding: 8px 16px;
     }
+    .pomo-btn { min-width: 44px; min-height: 44px; padding: 8px; }
+    .pomo-chip { min-height: 36px; }
     .top-btns { order: 1; }
     .vol-slider { width: 80px; }
 
@@ -747,6 +790,7 @@
         <button class="pomo-btn" id="pomo-toggle" title="시작/정지">▶</button>
         <button class="pomo-btn" id="pomo-reset" title="리셋">↺</button>
       </div>
+      <div class="pomo-progress" aria-hidden="true"><div class="pomo-progress-fill" id="pomo-progress-fill"></div></div>
       <!-- 프리셋 팝업 -->
       <div class="pomo-preset-popup" id="pomo-popup">
         <div class="pomo-preset-label">FOCUS / BREAK</div>
@@ -958,6 +1002,16 @@ function pomoDisplay() {
   $('pomo-mode').textContent = pomoMode;
   $('pomo-mode').classList.toggle('break', pomoMode === 'BREAK');
   $('pomo-toggle').textContent = pomoRunning ? '❚❚' : '▶';
+  // progress underline + is-running / break-mode
+  const total = (pomoMode === 'FOCUS' ? pomoFocus : pomoBreak) * 60;
+  const ratio = Math.max(0, Math.min(1, total > 0 ? pomoLeft / total : 1));
+  const fill = document.getElementById('pomo-progress-fill');
+  if (fill) fill.style.width = (ratio * 100) + '%';
+  const wrap = document.querySelector('.pomo-wrap');
+  if (wrap) {
+    wrap.classList.toggle('is-running', pomoRunning);
+    wrap.classList.toggle('break-mode', pomoMode === 'BREAK');
+  }
 }
 
 function pomoTick() {
@@ -1039,7 +1093,7 @@ function openSavedModal() {
   }
   list.innerHTML = '';
   if (savedFlows.length === 0) {
-    list.innerHTML = '<p class="saved-empty">No saved flows yet.</p>';
+    list.innerHTML = '<p class="saved-empty">No saved flows yet.</p><div class="saved-empty-divider"></div><p class="saved-empty-ko">마음에 든 명언을 저장하면 여기에 모입니다.</p>';
   } else {
     savedFlows.slice().reverse().forEach(q => {
       const card = document.createElement('div');
