@@ -601,29 +601,81 @@
     width: 100%; max-width: 640px;
     display: flex; flex-direction: column; gap: 20px;
   }
+  /* Apple Dark Utility Card 패턴 적용 — graphite 스테핑 + 캡슐 칩 + physical press */
   .saved-card {
-    background: rgba(255,255,255,0.04);
-    border: 0.5px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 24px 28px;
+    position: relative;
+    background: linear-gradient(180deg, rgba(39,39,41,0.92) 0%, rgba(42,42,44,0.92) 100%);
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 24px 24px 20px 28px;
     cursor: pointer;
-    transition: background 200ms;
+    overflow: hidden;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      0 4px 16px rgba(0,0,0,0.18);
+    transition:
+      transform 280ms cubic-bezier(0.4,0,0.2,1),
+      border-color 280ms ease,
+      background 280ms ease,
+      box-shadow 280ms ease;
   }
-  .saved-card:hover { background: rgba(255,255,255,0.08); }
+  /* 좌측 1.5px 액센트 라인 — 호버 시 스카이블루로 점등 */
+  .saved-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 24px; bottom: 24px;
+    width: 1.5px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 0 1.5px 1.5px 0;
+    transition: background 280ms ease;
+  }
+  .saved-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(0,170,210,0.32);
+    background: linear-gradient(180deg, rgba(40,42,44,0.95) 0%, rgba(43,43,46,0.95) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      0 8px 24px rgba(0,0,0,0.28);
+  }
+  .saved-card:hover::before {
+    background: linear-gradient(180deg, transparent 0%, #00AAD2 50%, transparent 100%);
+  }
+  /* Apple physical press — 클릭 순간 가라앉음 */
+  .saved-card:active {
+    transform: scale(0.99);
+  }
   .saved-card-en {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 18px; font-weight: 500;
+    font-size: 19px; font-weight: 500;
     color: #F5F5F7; line-height: 1.4;
+    letter-spacing: -0.005em;
     margin-bottom: 10px;
   }
   .saved-card-ko {
     font-family: 'Noto Serif KR', serif;
-    font-size: 13px; color: rgba(245,245,247,0.5);
-    line-height: 1.5; margin-bottom: 12px;
+    font-size: 13px; font-weight: 300;
+    color: rgba(245,245,247,0.5);
+    line-height: 1.55;
+    margin-bottom: 16px;
   }
+  /* 저자 라벨 — Apple capsule geometry */
   .saved-card-author {
-    font-size: 11px; color: rgba(245,245,247,0.35);
-    letter-spacing: 0.06em;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10.5px;
+    color: rgba(245,245,247,0.6);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 6px 12px;
+    transition: background 280ms ease, border-color 280ms ease, color 280ms ease;
+  }
+  .saved-card:hover .saved-card-author {
+    background: rgba(0,170,210,0.1);
+    border-color: rgba(0,170,210,0.28);
+    color: rgba(245,245,247,0.85);
   }
   .saved-empty {
     color: rgba(245,245,247,0.28);
@@ -662,6 +714,10 @@
     /* SAVED 모달 모바일 */
     .saved-modal-desc { font-size: 11px; }
     .saved-modal-desc-ko { font-size: 10px; }
+    .saved-card { padding: 20px 22px 18px 24px; border-radius: 16px; }
+    .saved-card-en { font-size: 17px; }
+    .saved-card-ko { font-size: 12.5px; }
+    .saved-card-author { font-size: 10px; padding: 5px 10px; }
   }
 </style>
 </head>
